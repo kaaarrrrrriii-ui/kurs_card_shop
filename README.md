@@ -1,0 +1,1 @@
+# kurs_card_shop
