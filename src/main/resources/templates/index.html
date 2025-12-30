@@ -1,0 +1,1120 @@
+﻿<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Управление корзиной покупателя</title>
+  <style>
+    :root {
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --card: #ffffff;
+      --accent: #1d4ed8;
+      --accent-dark: #1e40af;
+      --soft: #eef2ff;
+      --border: #e5e7eb;
+      --panel: #f8fafc;
+      --shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+      font-family: "Trebuchet MS", Verdana, sans-serif;
+      margin: 0;
+      background: radial-gradient(1200px 600px at 20% -10%, #e0e7ff 0%, #f8fafc 55%, #f1f5f9 100%);
+      color: var(--ink);
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .message {
+      background: #ecfeff;
+      border: 1px solid #a5f3fc;
+      color: #155e75;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tabs {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .tabs input[type="radio"] {
+      display: none;
+    }
+
+    .tab-labels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab-labels label {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--soft);
+      color: #1e3a8a;
+      cursor: pointer;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    #tab-customers:checked ~ .tab-labels label[for="tab-customers"],
+    #tab-products:checked ~ .tab-labels label[for="tab-products"],
+    #tab-carts:checked ~ .tab-labels label[for="tab-carts"],
+    #tab-promos:checked ~ .tab-labels label[for="tab-promos"],
+    #tab-analytics:checked ~ .tab-labels label[for="tab-analytics"] {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    #tab-customers:checked ~ .tab-panels #panel-customers,
+    #tab-products:checked ~ .tab-panels #panel-products,
+    #tab-carts:checked ~ .tab-panels #panel-carts,
+    #tab-promos:checked ~ .tab-panels #panel-promos,
+    #tab-analytics:checked ~ .tab-panels #panel-analytics {
+      display: block;
+    }
+
+    .section {
+      background: var(--card);
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 24px rgba(148, 163, 184, 0.18);
+      animation: rise 0.4s ease;
+    }
+
+    .section-subtitle {
+      margin: 4px 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    h3 {
+      margin: 12px 0 8px;
+    }
+
+    .buttons {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      column-count: 3;
+      column-gap: 12px;
+    }
+
+    .buttons li {
+      width: 100%;
+      break-inside: avoid;
+      margin-bottom: 10px;
+    }
+
+    .buttons form {
+      display: block;
+    }
+
+    button,
+    .btn {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: none;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .buttons button {
+      width: 100%;
+      min-height: 64px;
+      height: 64px;
+      padding: 14px 18px;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.2;
+    }
+
+    button:hover,
+    .btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .form-block {
+      border-radius: 12px;
+      padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      background: var(--panel);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+    }
+
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #0f172a;
+    }
+
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #0f172a;
+    }
+
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 38px;
+    }
+
+    .checkbox-field input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .form-actions {
+      margin-top: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    .section form + form {
+      margin-top: 14px;
+    }
+
+    .section .form-block + .form-block {
+      margin-top: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 1080px) {
+      .buttons {
+        column-count: 2;
+      }
+
+      .buttons button {
+        min-height: 60px;
+        height: 60px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .buttons {
+        column-count: 1;
+      }
+
+      .buttons button {
+        min-height: 56px;
+        height: 56px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .section {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Система управления корзиной покупателя</h1>
+      <p class="subtitle">Работа с данными, корзинами и аналитикой в одном интерфейсе</p>
+    </header>
+
+    <div class="message" th:if="${message != null}" th:text="${message}"></div>
+
+    <div class="tabs">
+      <input type="radio" id="tab-customers" name="tabs" th:checked="${activeTab == null || activeTab == 'customers'}" />
+      <input type="radio" id="tab-products" name="tabs" th:checked="${activeTab == 'products'}" />
+      <input type="radio" id="tab-carts" name="tabs" th:checked="${activeTab == 'carts'}" />
+      <input type="radio" id="tab-promos" name="tabs" th:checked="${activeTab == 'promos'}" />
+      <input type="radio" id="tab-analytics" name="tabs" th:checked="${activeTab == 'analytics'}" />
+
+      <div class="tab-labels">
+        <label for="tab-customers">Покупатели</label>
+        <label for="tab-products">Товары</label>
+        <label for="tab-carts">Корзины</label>
+        <label for="tab-promos">Промокоды</label>
+        <label for="tab-analytics">Аналитика</label>
+      </div>
+
+      <div class="tab-panels">
+        <section class="panel" id="panel-customers">
+          <div class="section">
+            <h2>Покупатели</h2>
+            <form method="post" action="/manage/customer/create" class="form-block">
+              <div class="form-title">&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1077; &#1087;&#1086;&#1082;&#1091;&#1087;&#1072;&#1090;&#1077;&#1083;&#1103;</div>
+              <p class="form-hint">&#1059;&#1082;&#1072;&#1078;&#1080;&#1090;&#1077; &#1101;&#1083;. &#1087;&#1086;&#1095;&#1090;&#1091; &#1080; &#1087;&#1088;&#1080; &#1085;&#1077;&#1086;&#1073;&#1093;&#1086;&#1076;&#1080;&#1084;&#1086;&#1089;&#1090;&#1080; &#1076;&#1072;&#1090;&#1091; &#1088;&#1077;&#1075;&#1080;&#1089;&#1090;&#1088;&#1072;&#1094;&#1080;&#1080; &#1080; &#1091;&#1088;&#1086;&#1074;&#1077;&#1085;&#1100;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>Эл. почта</label>
+                  <input type="email" name="email" required />
+                </div>
+                <div>
+                  <label>Дата регистрации</label>
+                  <input type="date" name="registrationDate" />
+                </div>
+                <div>
+                  <label>Уровень лояльности</label>
+                  <select name="loyaltyLevel">
+                    <option value="BRONZE">БРОНЗА</option>
+                    <option value="SILVER">СЕРЕБРО</option>
+                    <option value="GOLD">ЗОЛОТО</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Добавить покупателя</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/customer/delete" class="form-block">
+              <div class="form-title">&#1059;&#1076;&#1072;&#1083;&#1077;&#1085;&#1080;&#1077; &#1087;&#1086;&#1082;&#1091;&#1087;&#1072;&#1090;&#1077;&#1083;&#1103;</div>
+              <p class="form-hint">&#1042;&#1074;&#1077;&#1076;&#1080;&#1090;&#1077; ID &#1080;&#1079; &#1089;&#1087;&#1080;&#1089;&#1082;&#1072; &#1085;&#1080;&#1078;&#1077;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID покупателя для удаления</label>
+                  <input type="number" name="customerId" required />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Удалить покупателя</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/customer/update" class="form-block">
+              <div class="form-title">&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1087;&#1086;&#1082;&#1091;&#1087;&#1072;&#1090;&#1077;&#1083;&#1103;</div>
+              <p class="form-hint">&#1054;&#1089;&#1090;&#1072;&#1074;&#1100;&#1090;&#1077; &#1087;&#1086;&#1083;&#1077; &#1087;&#1091;&#1089;&#1090;&#1099;&#1084;, &#1095;&#1090;&#1086;&#1073;&#1099; &#1089;&#1086;&#1093;&#1088;&#1072;&#1085;&#1080;&#1090;&#1100; &#1090;&#1077;&#1082;&#1091;&#1097;&#1077;&#1077; &#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID покупателя для редактирования</label>
+                  <input type="number" name="customerId" required />
+                </div>
+                <div>
+                  <label>Новая эл. почта (опционально)</label>
+                  <input type="email" name="email" />
+                </div>
+                <div>
+                  <label>Новая дата регистрации (опционально)</label>
+                  <input type="date" name="registrationDate" />
+                </div>
+                <div>
+                  <label>Новый уровень лояльности</label>
+                  <select name="loyaltyLevel">
+                    <option value="">Без изменений</option>
+                    <option value="BRONZE">БРОНЗА</option>
+                    <option value="SILVER">СЕРЕБРО</option>
+                    <option value="GOLD">ЗОЛОТО</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Обновить покупателя</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/customer/search" class="form-block">
+              <div class="form-title">&#1055;&#1086;&#1080;&#1089;&#1082; &#1080; &#1092;&#1080;&#1083;&#1100;&#1090;&#1088;&#1072;&#1094;&#1080;&#1103;</div>
+              <p class="form-hint">&#1059;&#1082;&#1072;&#1078;&#1080;&#1090;&#1077; &#1082;&#1088;&#1080;&#1090;&#1077;&#1088;&#1080;&#1080; &#1076;&#1083;&#1103; &#1086;&#1090;&#1073;&#1086;&#1088;&#1072; &#1087;&#1086;&#1082;&#1091;&#1087;&#1072;&#1090;&#1077;&#1083;&#1077;&#1081;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>Эл. почта содержит</label>
+                  <input type="text" name="email" />
+                </div>
+                <div>
+                  <label>Уровень лояльности</label>
+                  <select name="loyaltyLevel">
+                    <option value="">Любой</option>
+                    <option value="BRONZE">БРОНЗА</option>
+                    <option value="SILVER">СЕРЕБРО</option>
+                    <option value="GOLD">ЗОЛОТО</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Регистрация с</label>
+                  <input type="date" name="registeredFrom" />
+                </div>
+                <div>
+                  <label>Регистрация по</label>
+                  <input type="date" name="registeredTo" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Применить фильтр</button>
+                <a class="btn" href="/">Сбросить</a>
+              </div>
+            </form>
+          </div>
+
+          <div class="section" th:if="${customers != null}">
+            <h3>Список покупателей</h3>
+            <table>
+              <tr><th>ID</th><th>Эл. почта</th><th>Дата регистрации</th><th>Уровень</th></tr>
+              <tr th:each="row : ${customers}">
+                <td th:text="${row.customerId}"></td>
+                <td th:text="${row.email}"></td>
+                <td th:text="${row.registrationDate}"></td>
+                <td th:text="${row.loyaltyLevel == null ? '-' : (row.loyaltyLevel.name() == 'BRONZE' ? 'БРОНЗА' : (row.loyaltyLevel.name() == 'SILVER' ? 'СЕРЕБРО' : 'ЗОЛОТО'))}"></td>
+              </tr>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-products">
+          <div class="section">
+            <h2>Товары</h2>
+            <form method="post" action="/manage/product/create" class="form-block">
+              <div class="form-title">&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1077; &#1090;&#1086;&#1074;&#1072;&#1088;&#1072;</div>
+              <p class="form-hint">&#1047;&#1072;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1077; &#1073;&#1072;&#1079;&#1086;&#1074;&#1099;&#1077; &#1076;&#1072;&#1085;&#1085;&#1099;&#1077; &#1080; &#1086;&#1090;&#1084;&#1077;&#1090;&#1100;&#1090;&#1077; &#1085;&#1072;&#1083;&#1080;&#1095;&#1080;&#1077;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>Название</label>
+                  <input type="text" name="name" required />
+                </div>
+                <div>
+                  <label>Категория</label>
+                  <input type="text" name="category" required />
+                </div>
+                <div>
+                  <label>Базовая цена</label>
+                  <input type="number" name="basePrice" step="0.01" required />
+                </div>
+                <div>
+                  <label>Статус</label>
+                  <div class="checkbox-field">
+                    <input type="checkbox" name="inStock" value="true" />
+                    <span>В наличии</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Добавить товар</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/product/delete" class="form-block">
+              <div class="form-title">&#1059;&#1076;&#1072;&#1083;&#1077;&#1085;&#1080;&#1077; &#1090;&#1086;&#1074;&#1072;&#1088;&#1072;</div>
+              <p class="form-hint">&#1042;&#1074;&#1077;&#1076;&#1080;&#1090;&#1077; ID &#1090;&#1086;&#1074;&#1072;&#1088;&#1072; &#1076;&#1083;&#1103; &#1091;&#1076;&#1072;&#1083;&#1077;&#1085;&#1080;&#1103;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID товара для удаления</label>
+                  <input type="number" name="productId" required />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Удалить товар</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/product/update" class="form-block">
+              <div class="form-title">&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1090;&#1086;&#1074;&#1072;&#1088;&#1072;</div>
+              <p class="form-hint">&#1052;&#1077;&#1085;&#1103;&#1081;&#1090;&#1077; &#1090;&#1086;&#1083;&#1100;&#1082;&#1086; &#1090;&#1077; &#1087;&#1086;&#1083;&#1103;, &#1082;&#1086;&#1090;&#1086;&#1088;&#1099;&#1077; &#1085;&#1091;&#1078;&#1085;&#1086; &#1086;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID товара для редактирования</label>
+                  <input type="number" name="productId" required />
+                </div>
+                <div>
+                  <label>Новое название (опционально)</label>
+                  <input type="text" name="name" />
+                </div>
+                <div>
+                  <label>Новая категория (опционально)</label>
+                  <input type="text" name="category" />
+                </div>
+                <div>
+                  <label>Новая базовая цена (опционально)</label>
+                  <input type="number" name="basePrice" step="0.01" />
+                </div>
+                <div>
+                  <label>Статус</label>
+                  <select name="inStock">
+                    <option value="">Без изменений</option>
+                    <option value="true">В наличии</option>
+                    <option value="false">Нет в наличии</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Обновить товар</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/product/search" class="form-block">
+              <div class="form-title">&#1055;&#1086;&#1080;&#1089;&#1082; &#1080; &#1092;&#1080;&#1083;&#1100;&#1090;&#1088;&#1072;&#1094;&#1080;&#1103;</div>
+              <p class="form-hint">&#1060;&#1080;&#1083;&#1100;&#1090;&#1088;&#1099; &#1087;&#1086; &#1085;&#1072;&#1079;&#1074;&#1072;&#1085;&#1080;&#1102;, &#1082;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1080; &#1080; &#1094;&#1077;&#1085;&#1077;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>Название содержит</label>
+                  <input type="text" name="name" />
+                </div>
+                <div>
+                  <label>Категория</label>
+                  <input type="text" name="category" />
+                </div>
+                <div>
+                  <label>Наличие</label>
+                  <select name="inStock">
+                    <option value="">Любое</option>
+                    <option value="true">В наличии</option>
+                    <option value="false">Нет в наличии</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Цена от</label>
+                  <input type="number" name="minPrice" step="0.01" />
+                </div>
+                <div>
+                  <label>Цена до</label>
+                  <input type="number" name="maxPrice" step="0.01" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Применить фильтр</button>
+                <a class="btn" href="/">Сбросить</a>
+              </div>
+            </form>
+          </div>
+
+          <div class="section" th:if="${products != null}">
+            <h3>Список товаров</h3>
+            <table>
+              <tr><th>ID</th><th>Название</th><th>Категория</th><th>Цена</th><th>В наличии</th></tr>
+              <tr th:each="row : ${products}">
+                <td th:text="${row.productId}"></td>
+                <td th:text="${row.name}"></td>
+                <td th:text="${row.category}"></td>
+                <td th:text="${row.basePrice}"></td>
+                <td th:text="${row.inStock ? 'Да' : 'Нет'}"></td>
+              </tr>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-carts">
+          <div class="section">
+            <h2>Корзины</h2>
+            <form method="post" action="/manage/cart/create" class="form-block">
+              <div class="form-title">&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1077; &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;&#1099;</div>
+              <p class="form-hint">&#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1087;&#1086;&#1082;&#1091;&#1087;&#1072;&#1090;&#1077;&#1083;&#1103;, &#1087;&#1088;&#1080; &#1085;&#1077;&#1086;&#1073;&#1093;&#1086;&#1076;&#1080;&#1084;&#1086;&#1089;&#1090;&#1080; &#1076;&#1086;&#1073;&#1072;&#1074;&#1100;&#1090;&#1077; &#1087;&#1088;&#1086;&#1084;&#1086;&#1082;&#1086;&#1076;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID покупателя</label>
+                  <input type="number" name="customerId" required />
+                </div>
+                <div>
+                  <label>Промокод (опционально)</label>
+                  <input type="text" name="promoCode" />
+                </div>
+                <div>
+                  <label>Статус</label>
+                  <div class="checkbox-field">
+                    <input type="checkbox" name="active" value="true" />
+                    <span>Активна</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Создать корзину</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/cart/delete" class="form-block">
+              <div class="form-title">&#1059;&#1076;&#1072;&#1083;&#1077;&#1085;&#1080;&#1077; &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;&#1099;</div>
+              <p class="form-hint">&#1042;&#1074;&#1077;&#1076;&#1080;&#1090;&#1077; ID &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;&#1099; &#1080;&#1079; &#1089;&#1087;&#1080;&#1089;&#1082;&#1072;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID корзины для удаления</label>
+                  <input type="number" name="cartId" required />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Удалить корзину</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/cart/update" class="form-block">
+              <div class="form-title">&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;&#1099;</div>
+              <p class="form-hint">&#1055;&#1088;&#1086;&#1084;&#1086;&#1082;&#1086;&#1076; &#1084;&#1086;&#1078;&#1085;&#1086; &#1086;&#1095;&#1080;&#1089;&#1090;&#1080;&#1090;&#1100; &#1086;&#1090;&#1076;&#1077;&#1083;&#1100;&#1085;&#1086;&#1081; &#1075;&#1072;&#1083;&#1086;&#1095;&#1082;&#1086;&#1081;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID корзины для редактирования</label>
+                  <input type="number" name="cartId" required />
+                </div>
+                <div>
+                  <label>Новый ID покупателя (опционально)</label>
+                  <input type="number" name="customerId" />
+                </div>
+                <div>
+                  <label>Новый промокод (опционально)</label>
+                  <input type="text" name="promoCode" />
+                </div>
+                <div>
+                  <label>Статус</label>
+                  <select name="active">
+                    <option value="true">Активна</option>
+                    <option value="false">Неактивна</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Сбросить промокод</label>
+                  <div class="checkbox-field">
+                    <input type="checkbox" name="clearPromo" value="true" />
+                    <span>Очистить промокод</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Обновить корзину</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/cart/search" class="form-block">
+              <div class="form-title">&#1055;&#1086;&#1080;&#1089;&#1082; &#1080; &#1092;&#1080;&#1083;&#1100;&#1090;&#1088;&#1072;&#1094;&#1080;&#1103; &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;</div>
+              <p class="form-hint">&#1054;&#1090;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;&#1099; &#1087;&#1086; &#1082;&#1083;&#1080;&#1077;&#1085;&#1090;&#1091;, &#1089;&#1090;&#1072;&#1090;&#1091;&#1089;&#1091; &#1080; &#1087;&#1088;&#1086;&#1084;&#1086;&#1082;&#1086;&#1076;&#1091;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID покупателя</label>
+                  <input type="number" name="customerId" />
+                </div>
+                <div>
+                  <label>Статус</label>
+                  <select name="active">
+                    <option value="">Любой</option>
+                    <option value="true">Активна</option>
+                    <option value="false">Неактивна</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Промокод содержит</label>
+                  <input type="text" name="promoCode" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Применить фильтр</button>
+                <a class="btn" href="/">Сбросить</a>
+              </div>
+            </form>
+
+            <h3>Позиции в корзинах</h3>
+            <form method="post" action="/manage/cart-item/create" class="form-block">
+              <div class="form-title">&#1044;&#1086;&#1073;&#1072;&#1074;&#1083;&#1077;&#1085;&#1080;&#1077; &#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1080;</div>
+              <p class="form-hint">&#1059;&#1082;&#1072;&#1078;&#1080;&#1090;&#1077; &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;&#1091;, &#1090;&#1086;&#1074;&#1072;&#1088; &#1080; &#1082;&#1086;&#1083;&#1080;&#1095;&#1077;&#1089;&#1090;&#1074;&#1086;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID корзины</label>
+                  <input type="number" name="cartId" required />
+                </div>
+                <div>
+                  <label>ID товара</label>
+                  <input type="number" name="productId" required />
+                </div>
+                <div>
+                  <label>Количество</label>
+                  <input type="number" name="quantity" min="1" required />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Добавить позицию</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/cart-item/delete" class="form-block">
+              <div class="form-title">&#1059;&#1076;&#1072;&#1083;&#1077;&#1085;&#1080;&#1077; &#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1080;</div>
+              <p class="form-hint">&#1042;&#1074;&#1077;&#1076;&#1080;&#1090;&#1077; ID &#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1080; &#1080;&#1079; &#1089;&#1087;&#1080;&#1089;&#1082;&#1072; &#1085;&#1080;&#1078;&#1077;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID позиции для удаления</label>
+                  <input type="number" name="cartItemId" required />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Удалить позицию</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/cart-item/update" class="form-block">
+              <div class="form-title">&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1080;</div>
+              <p class="form-hint">&#1054;&#1073;&#1085;&#1086;&#1074;&#1083;&#1103;&#1081;&#1090;&#1077; &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;&#1091;, &#1090;&#1086;&#1074;&#1072;&#1088; &#1080;&#1083;&#1080; &#1082;&#1086;&#1083;&#1080;&#1095;&#1077;&#1089;&#1090;&#1074;&#1086;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID позиции для редактирования</label>
+                  <input type="number" name="cartItemId" required />
+                </div>
+                <div>
+                  <label>Новый ID корзины (опционально)</label>
+                  <input type="number" name="cartId" />
+                </div>
+                <div>
+                  <label>Новый ID товара (опционально)</label>
+                  <input type="number" name="productId" />
+                </div>
+                <div>
+                  <label>Новое количество (опционально)</label>
+                  <input type="number" name="quantity" min="1" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Обновить позицию</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/cart-item/search" class="form-block">
+              <div class="form-title">&#1055;&#1086;&#1080;&#1089;&#1082; &#1080; &#1092;&#1080;&#1083;&#1100;&#1090;&#1088;&#1072;&#1094;&#1080;&#1103; &#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1081;</div>
+              <p class="form-hint">&#1054;&#1090;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1087;&#1086;&#1079;&#1080;&#1094;&#1080;&#1080; &#1087;&#1086; &#1082;&#1086;&#1088;&#1079;&#1080;&#1085;&#1077;, &#1090;&#1086;&#1074;&#1072;&#1088;&#1091; &#1080;&#1083;&#1080; &#1082;&#1086;&#1083;&#1080;&#1095;&#1077;&#1089;&#1090;&#1074;&#1091;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>ID корзины</label>
+                  <input type="number" name="cartId" />
+                </div>
+                <div>
+                  <label>ID товара</label>
+                  <input type="number" name="productId" />
+                </div>
+                <div>
+                  <label>Количество от</label>
+                  <input type="number" name="minQuantity" min="1" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Применить фильтр</button>
+                <a class="btn" href="/">Сбросить</a>
+              </div>
+            </form>
+          </div>
+
+          <div class="section" th:if="${carts != null}">
+            <h3>Список корзин</h3>
+            <table>
+              <tr><th>ID</th><th>ID покупателя</th><th>Активна</th><th>Промокод</th><th>Дата создания</th></tr>
+              <tr th:each="row : ${carts}">
+                <td th:text="${row.cartId}"></td>
+                <td th:text="${row.customer != null ? row.customer.customerId : '-'}"></td>
+                <td th:text="${row.active ? 'Да' : 'Нет'}"></td>
+                <td th:text="${row.promoCode}"></td>
+                <td th:text="${row.createdDate == null ? '-' : #temporals.format(row.createdDate, 'dd.MM.yyyy HH:mm')}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${cartItems != null}">
+            <h3>Список позиций</h3>
+            <table>
+              <tr><th>ID</th><th>ID корзины</th><th>ID товара</th><th>Количество</th><th>Дата добавления</th></tr>
+              <tr th:each="row : ${cartItems}">
+                <td th:text="${row.cartItemId}"></td>
+                <td th:text="${row.cart != null ? row.cart.cartId : '-'}"></td>
+                <td th:text="${row.sourceProductId == null ? '-' : row.sourceProductId}"></td>
+                <td th:text="${row.quantity}"></td>
+                <td th:text="${row.addedDate == null ? '-' : #temporals.format(row.addedDate, 'dd.MM.yyyy HH:mm')}"></td>
+              </tr>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-promos">
+          <div class="section">
+            <h2>Промокоды</h2>
+            <form method="post" action="/manage/promo/create" class="form-block">
+              <div class="form-title">&#1057;&#1086;&#1079;&#1076;&#1072;&#1085;&#1080;&#1077; &#1087;&#1088;&#1086;&#1084;&#1086;&#1082;&#1086;&#1076;&#1072;</div>
+              <p class="form-hint">&#1059;&#1082;&#1072;&#1078;&#1080;&#1090;&#1077; &#1090;&#1080;&#1087;, &#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077; &#1080; &#1087;&#1088;&#1080; &#1085;&#1077;&#1086;&#1073;&#1093;&#1086;&#1076;&#1080;&#1084;&#1086;&#1089;&#1090;&#1080; &#1082;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1102;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>Код</label>
+                  <input type="text" name="code" required />
+                </div>
+                <div>
+                  <label>Тип скидки</label>
+                  <select name="discountType">
+                    <option value="PERCENT">Процент</option>
+                    <option value="FIXED_AMOUNT">Фиксированная сумма</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Значение скидки</label>
+                  <input type="number" name="discountValue" step="0.01" required />
+                </div>
+                <div>
+                  <label>Категория (опционально)</label>
+                  <input type="text" name="applicableCategory" />
+                </div>
+                <div>
+                  <label>Статус</label>
+                  <div class="checkbox-field">
+                    <input type="checkbox" name="active" value="true" />
+                    <span>Активен</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Создать промокод</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/promo/delete" class="form-block">
+              <div class="form-title">&#1059;&#1076;&#1072;&#1083;&#1077;&#1085;&#1080;&#1077; &#1087;&#1088;&#1086;&#1084;&#1086;&#1082;&#1086;&#1076;&#1072;</div>
+              <p class="form-hint">&#1042;&#1074;&#1077;&#1076;&#1080;&#1090;&#1077; &#1082;&#1086;&#1076; &#1087;&#1088;&#1086;&#1084;&#1086;&#1082;&#1086;&#1076;&#1072; &#1076;&#1083;&#1103; &#1091;&#1076;&#1072;&#1083;&#1077;&#1085;&#1080;&#1103;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>Код промокода для удаления</label>
+                  <input type="text" name="code" required />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Удалить промокод</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/promo/update" class="form-block">
+              <div class="form-title">&#1056;&#1077;&#1076;&#1072;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; &#1087;&#1088;&#1086;&#1084;&#1086;&#1082;&#1086;&#1076;&#1072;</div>
+              <p class="form-hint">&#1054;&#1089;&#1090;&#1072;&#1074;&#1100;&#1090;&#1077; &#1087;&#1086;&#1083;&#1077; &#1087;&#1091;&#1089;&#1090;&#1099;&#1084;, &#1095;&#1090;&#1086;&#1073;&#1099; &#1085;&#1077; &#1084;&#1077;&#1085;&#1103;&#1090;&#1100; &#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1077;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>Код промокода для редактирования</label>
+                  <input type="text" name="code" required />
+                </div>
+                <div>
+                  <label>Новый тип скидки</label>
+                  <select name="discountType">
+                    <option value="">Без изменений</option>
+                    <option value="PERCENT">Процент</option>
+                    <option value="FIXED_AMOUNT">Фиксированная сумма</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Новое значение скидки (опционально)</label>
+                  <input type="number" name="discountValue" step="0.01" />
+                </div>
+                <div>
+                  <label>Новая категория (опционально)</label>
+                  <input type="text" name="applicableCategory" />
+                </div>
+                <div>
+                  <label>Статус</label>
+                  <select name="active">
+                    <option value="">Без изменений</option>
+                    <option value="true">Активен</option>
+                    <option value="false">Неактивен</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Сбросить категорию</label>
+                  <div class="checkbox-field">
+                    <input type="checkbox" name="clearCategory" value="true" />
+                    <span>Очистить категорию</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Обновить промокод</button>
+              </div>
+            </form>
+            <form method="post" action="/manage/promo/search" class="form-block">
+              <div class="form-title">&#1055;&#1086;&#1080;&#1089;&#1082; &#1080; &#1092;&#1080;&#1083;&#1100;&#1090;&#1088;&#1072;&#1094;&#1080;&#1103;</div>
+              <p class="form-hint">&#1060;&#1080;&#1083;&#1100;&#1090;&#1088;&#1072;&#1094;&#1080;&#1103; &#1087;&#1086; &#1090;&#1080;&#1087;&#1091;, &#1072;&#1082;&#1090;&#1080;&#1074;&#1085;&#1086;&#1089;&#1090;&#1080; &#1080; &#1082;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1080;.</p>
+              <div class="form-grid">
+                <div>
+                  <label>Тип скидки</label>
+                  <select name="discountType">
+                    <option value="">Любой</option>
+                    <option value="PERCENT">Процент</option>
+                    <option value="FIXED_AMOUNT">Фиксированная сумма</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Статус</label>
+                  <select name="active">
+                    <option value="">Любой</option>
+                    <option value="true">Активен</option>
+                    <option value="false">Неактивен</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Категория содержит</label>
+                  <input type="text" name="applicableCategory" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Применить фильтр</button>
+                <a class="btn" href="/">Сбросить</a>
+              </div>
+            </form>
+          </div>
+
+          <div class="section" th:if="${promoCodes != null}">
+            <h3>Список промокодов</h3>
+            <table>
+              <tr><th>Код</th><th>Тип</th><th>Значение</th><th>Активен</th><th>Категория</th></tr>
+              <tr th:each="row : ${promoCodes}">
+                <td th:text="${row.code}"></td>
+                <td th:text="${row.discountType == null ? '-' : (row.discountType.name() == 'PERCENT' ? 'Процент' : 'Фиксированная сумма')}"></td>
+                <td th:text="${row.discountValue}"></td>
+                <td th:text="${row.active ? 'Да' : 'Нет'}"></td>
+                <td th:text="${row.applicableCategory}"></td>
+              </tr>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-analytics">
+          <div class="section">
+            <h2>Аналитика</h2>
+            <ul class="buttons">
+              <li>
+                <form method="post" action="/analytics/active-cart-totals">
+                  <button type="submit">1. Суммы активных корзин</button>
+                </form>
+              </li>
+              <li>
+                <form method="post" action="/analytics/top-products">
+                  <button type="submit">2. Топ-5 товаров по добавлениям</button>
+                </form>
+              </li>
+              <li>
+                <form method="post" action="/analytics/active-carts-per-customer">
+                  <button type="submit">3. Активные корзины по покупателям</button>
+                </form>
+              </li>
+              <li>
+                <form method="post" action="/analytics/category-counts">
+                  <button type="submit">4. Количество по категориям</button>
+                </form>
+              </li>
+              <li>
+                <form method="post" action="/analytics/final-totals-with-promo">
+                  <button type="submit">5. Итоги с промокодом</button>
+                </form>
+              </li>
+              <li>
+                <form method="post" action="/analytics/unused-promos">
+                  <button type="submit">6. Активные промокоды без использования</button>
+                </form>
+              </li>
+              <li>
+                <form method="post" action="/analytics/promo-discount-summary">
+                  <button type="submit">7. Суммарные скидки по промокодам</button>
+                </form>
+              </li>
+              <li>
+                <form method="post" action="/analytics/out-of-stock-products">
+                  <button type="submit">8. Товары не в наличии в корзинах</button>
+                </form>
+              </li>
+              <li>
+                <form method="post" action="/analytics/weighted-efficiency">
+                  <button type="submit">9. Взвешенная эффективность корзин</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+          <div class="section" th:if="${activeCartTotals != null}">
+            <h2>Суммы активных корзин</h2>
+            <table>
+              <tr><th>ID корзины</th><th>Сумма</th></tr>
+              <tr th:each="row : ${activeCartTotals}">
+                <td th:text="${row.cartId}"></td>
+                <td th:text="${row.total}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${topProducts != null}">
+            <h2>Топ-5 товаров по добавлениям</h2>
+            <table>
+              <tr><th>ID товара</th><th>Название</th><th>Общее количество</th></tr>
+              <tr th:each="row : ${topProducts}">
+                <td th:text="${row.productId}"></td>
+                <td th:text="${row.name}"></td>
+                <td th:text="${row.totalQuantity}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${activeCartsPerCustomer != null}">
+            <h2>Активные корзины по покупателям</h2>
+            <table>
+              <tr><th>ID покупателя</th><th>Эл. почта</th><th>Активных корзин</th></tr>
+              <tr th:each="row : ${activeCartsPerCustomer}">
+                <td th:text="${row.customerId}"></td>
+                <td th:text="${row.email}"></td>
+                <td th:text="${row.activeCarts}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${categoryCounts != null}">
+            <h2>Количество по категориям</h2>
+            <table>
+              <tr><th>Категория</th><th>Общее количество</th></tr>
+              <tr th:each="row : ${categoryCounts}">
+                <td th:text="${row.category}"></td>
+                <td th:text="${row.totalQuantity}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${finalTotalsWithPromo != null}">
+            <h2>Итоги с промокодом</h2>
+            <table>
+              <tr><th>ID корзины</th><th>Промокод</th><th>Итоговая сумма</th></tr>
+              <tr th:each="row : ${finalTotalsWithPromo}">
+                <td th:text="${row.cartId}"></td>
+                <td th:text="${row.promoCode}"></td>
+                <td th:text="${row.total}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${unusedPromos != null}">
+            <h2>Активные промокоды без использования</h2>
+            <table>
+              <tr><th>Код</th><th>Тип</th><th>Значение</th><th>Категория</th></tr>
+              <tr th:each="row : ${unusedPromos}">
+                <td th:text="${row.code}"></td>
+                <td th:text="${row.discountType == null ? '-' : (row.discountType.name() == 'PERCENT' ? 'Процент' : 'Фиксированная сумма')}"></td>
+                <td th:text="${row.discountValue}"></td>
+                <td th:text="${row.applicableCategory}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${promoDiscountSummary != null}">
+            <h2>Суммарные скидки по промокодам</h2>
+            <table>
+              <tr><th>Код</th><th>Сумма скидок</th></tr>
+              <tr th:each="row : ${promoDiscountSummary}">
+                <td th:text="${row.code}"></td>
+                <td th:text="${row.totalDiscount}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${outOfStockProducts != null}">
+            <h2>Товары не в наличии в корзинах</h2>
+            <table>
+              <tr><th>ID товара</th><th>Название</th><th>Категория</th></tr>
+              <tr th:each="row : ${outOfStockProducts}">
+                <td th:text="${row.sourceProductId == null ? '-' : row.sourceProductId}"></td>
+                <td th:text="${row.name}"></td>
+                <td th:text="${row.category}"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="section" th:if="${weightedEfficiency != null}">
+            <h2>Взвешенная эффективность корзин</h2>
+            <table>
+              <tr><th>ID корзины</th><th>Сумма</th><th>Позиции</th><th>Уникальные товары</th><th>Оценка</th></tr>
+              <tr th:each="row : ${weightedEfficiency}">
+                <td th:text="${row.cartId}"></td>
+                <td th:text="${row.total}"></td>
+                <td th:text="${row.itemCount}"></td>
+                <td th:text="${row.distinctProducts}"></td>
+                <td th:text="${row.score}"></td>
+              </tr>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
